@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name:  my-doc-portal
+  labels:
+    app:  my-doc-portal
+spec:
+  selector:
+    matchLabels:
+      app: my-doc-portal
+  template:
+    metadata:
+      labels:
+        app:  my-doc-portal
+    spec:
+      containers:
+        - image: elmer:fudd
+          name: my-doc-portal
+          ports:
+            - containerPort: 80
+          resources:
+            limits:
+              cpu: 1000m
+              memory: 512Mi
+            requests:
+              cpu: 250m
+              memory: 128Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-doc-portal
+spec:
+  selector:
+    app: my-doc-portal
+  type: ClusterIP
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: minimal-ingress
+spec:
+  ingressClassName: nginx
+  rules:
+  - http:
+      paths:
+      - path: /my-doc-portal
+        pathType: Prefix
+        backend:
+          service:
+            name: my-doc-portal
+            port:
+              number: 80
